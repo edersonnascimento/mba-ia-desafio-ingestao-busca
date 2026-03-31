@@ -1,57 +1,87 @@
 # Desafio MBA Engenharia de Software com IA - Full Cycle
 
-## Visao geral
+## Visão geral
 Este projeto ingere um PDF, grava embeddings no PostgreSQL com pgvector e
-permite perguntas via CLI com respostas baseadas apenas no conteudo do PDF.
+permite perguntas via CLI com respostas baseadas apenas no conteúdo do PDF.
 
 ## Requisitos
 - Python 3.11+
 - Docker e Docker Compose
 
-## Configuracao
-1) Suba o Postgres com pgvector:
-```
+## Configuração
+
+### 1. Inicie o PGVector
+```bash
 docker compose up -d
 ```
 
-2) Instale as dependencias:
+Para parar o banco de dados:
+```bash
+docker compose stop
 ```
-python -m venv .venv
+
+Para interromper e remover os containers:
+```bash
+docker compose down
+```
+
+> Com o flag `-v` os dados são apagados junto com os containers:
+> ```bash
+> docker compose down -v
+> ```
+
+### 2. Instale as dependências
+```bash
+python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-3) Configure as variaveis de ambiente (exemplo):
+### 3. Configure as variáveis de ambiente
+Copie o exemplo e edite com suas chaves:
+```bash
+cp .env.example .env
+```
+
+Exemplo de `.env` com OpenAI:
 ```
 DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/rag
 EMBEDDINGS_PROVIDER=openai
 LLM_PROVIDER=openai
-OPENAI_API_KEY=...
+OPENAI_API_KEY=sua_chave_aqui
 ```
 
-Variaveis obrigatorias:
-- `DATABASE_URL`: string de conexao `postgresql+psycopg://...`
-- `EMBEDDINGS_PROVIDER`: `openai` ou `gemini`
-- `LLM_PROVIDER`: `openai` ou `gemini`
-- `OPENAI_API_KEY` quando provider for `openai`
-- `GOOGLE_API_KEY` quando provider for `gemini`
-
-Opcional:
-- `PDF_PATH`: caminho para o PDF (padrao: `document.pdf`)
-
-## Ingestao
-Execute a ingestao do PDF:
+Exemplo de `.env` com Gemini:
 ```
-python src/ingest.py
+DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/rag
+EMBEDDINGS_PROVIDER=gemini
+LLM_PROVIDER=gemini
+GOOGLE_API_KEY=sua_chave_aqui
 ```
+
+É possível combinar providers (ex: embeddings com OpenAI e LLM com Gemini).
+
+### 4. Colocar o PDF
+Certifique-se de que o arquivo `document.pdf` existe na raiz do projeto,
+ou defina `PDF_PATH` no `.env` para apontar para outro arquivo.
+
+## Ingestão
+Execute a ingestão do PDF:
+```bash
+python3 src/ingest.py
+```
+
+> **Atenção:** rodar a ingestão múltiplas vezes sobrescreve os chunks existentes
+> (usamos ids determinísticos). Não há duplicação, mas o processo re-calcula
+> todos os embeddings.
 
 ## Chat
 Inicie o CLI de perguntas:
-```
-python src/chat.py
+```bash
+python3 src/chat.py
 ```
 
-Saida fora do contexto deve ser sempre:
+Resposta quando a pergunta está fora do contexto:
 ```
-Nao tenho informacoes necessarias para responder sua pergunta.
+Não tenho informações necessárias para responder sua pergunta.
 ```
