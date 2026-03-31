@@ -2,7 +2,8 @@ from langchain_google_genai import (
     ChatGoogleGenerativeAI,
     GoogleGenerativeAIEmbeddings,
 )
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_openai import ChatOpenAI, BaseChatModel, OpenAIEmbeddings
+from langchain_core.embeddings import BaseEmbeddings
 
 from config import Settings
 
@@ -12,7 +13,7 @@ LLM_MODEL_OPENAI = "gpt-5-nano"
 LLM_MODEL_GEMINI = "gemini-2.5-flash-lite"
 
 
-def get_embeddings(settings: Settings):
+def get_embeddings(settings: Settings) -> BaseEmbeddings:
     """Return the configured embeddings client based on settings."""
 
     if settings.embeddings_provider == "openai":
@@ -33,7 +34,7 @@ def get_embeddings(settings: Settings):
     )
 
 
-def get_llm(settings: Settings):
+def get_llm(settings: Settings) -> BaseChatModel:
     """Return the configured chat model based on settings."""
 
     if not settings.llm_provider:

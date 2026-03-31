@@ -3,7 +3,12 @@ from dataclasses import dataclass
 
 from dotenv import load_dotenv
 
-SUPPORTED_PROVIDERS = ("openai", "gemini")
+CHUNK_SIZE = 1000
+CHUNK_OVERLAP = 150
+COLLECTION_NAME = "document_chunks"
+TOP_K = 10
+
+APPROVED_PROVIDERS = ("openai", "gemini")
 DEFAULT_PDF_PATH = "document.pdf"
 
 
@@ -23,9 +28,9 @@ def _normalize_provider(value: str | None, name: str) -> str:
     if not value or not value.strip():
         raise ValueError(f"{name} is required.")
     provider = value.strip().lower()
-    if provider not in SUPPORTED_PROVIDERS:
+    if provider not in APPROVED_PROVIDERS:
         raise ValueError(
-            f"{name} must be one of {', '.join(SUPPORTED_PROVIDERS)}."
+            f"{name} must be one of {', '.join(APPROVED_PROVIDERS)}."
         )
     return provider
 
@@ -54,11 +59,42 @@ def load_settings(
     if require_pdf and not os.path.exists(pdf_path):
         raise FileNotFoundError(f"PDF file not found at '{pdf_path}'.")
 
+    openai_api_key = os.getenv("OPENAI_API_KEY")
+    google_api_key = os.getenv("GOOGLE_API_KEY")
+
+    _validate_api_keys(
+        embeddings_provider=embeddings_provider,
+        llm_provider=llm_provider,
+        openai_api_key=openai_api_key,
+        google_api_key=google_api_key,
+    )
+
     return Settings(
         database_url=database_url,
         embeddings_provider=embeddings_provider,
         llm_provider=llm_provider,
-        openai_api_key=os.getenv("OPENAI_API_KEY"),
-        google_api_key=os.getenv("GOOGLE_API_KEY"),
+        openai_api_key=openai_api_key,
+        google_api_key=google_api_key,
         pdf_path=pdf_path,
     )
+
+
+def _validate_api_keys(
+    *,
+    embeddings_provider: str,
+    llm_provider: str | None,
+    openai_api_key: str | None,
+    google_api_key: str | None,
+) -> None:
+    """Ensure API keys match configured providers."""
+
+    if embeddings_provider == "openai" or llm_provider == "openai":
+        if not openai_api_key:
+            raise ValueError(
+                "OPENAI_API_KEY is required when any provider is 'openai'."
+            )
+    if embeddings_provider == "gemini" or llm_provider == "gemini":
+        if not google_api_key:
+            raise ValueError(
+                "GOOGLE_API_KEY is required when any provider is 'gemini'."
+            )

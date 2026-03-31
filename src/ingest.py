@@ -4,12 +4,8 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_postgres import PGVector
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from config import load_settings
+from config import CHUNK_OVERLAP, CHUNK_SIZE, COLLECTION_NAME, load_settings
 from providers import get_embeddings
-
-CHUNK_SIZE = 1000
-CHUNK_OVERLAP = 150
-COLLECTION_NAME = "document_chunks"
 
 
 def ingest_pdf() -> None:
@@ -48,11 +44,11 @@ def ingest_pdf() -> None:
     )
     vector_store.add_documents(chunks, ids=ids)
 
-    print(f"Ingestao concluida. Chunks inseridos: {len(chunks)}")
+    print(f"Ingestão concluída. Chunks inseridos: {len(chunks)}")
 
 
 if __name__ == "__main__":
     try:
         ingest_pdf()
     except Exception as exc:
-        print(f"Erro na ingestao: {exc}")
+        print(f"Erro na ingestão: {exc}")

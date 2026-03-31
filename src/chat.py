@@ -8,8 +8,8 @@ def main():
         llm = get_llm(settings)
     except Exception as exc:
         print(
-            "Nao foi possivel iniciar o chat. Verifique os erros de "
-            f"inicializacao. Detalhes: {exc}"
+            "Não foi possível iniciar o chat. Verifique os erros de "
+            f"inicialização. Detalhes: {exc}"
         )
         return
 
@@ -25,6 +25,7 @@ def main():
             print(response.content.strip())
         except Exception as exc:
             print(f"Erro ao responder pergunta: {exc}")
+
 
 if __name__ == "__main__":
     main()

@@ -1,14 +1,12 @@
+from langchain_core.documents import Document
 from langchain_postgres import PGVector
 
-from config import Settings, load_settings
+from config import COLLECTION_NAME, TOP_K, Settings, load_settings
 from providers import get_embeddings
 
-CHUNK_SIZE = 1000
-CHUNK_OVERLAP = 150
-TOP_K = 10
-COLLECTION_NAME = "document_chunks"
+
 OUT_OF_CONTEXT_ANSWER = (
-    "Nao tenho informacoes necessarias para responder sua pergunta."
+    "Não tenho informações necessárias para responder sua pergunta."
 )
 
 PROMPT_TEMPLATE = """
@@ -17,25 +15,25 @@ CONTEXTO:
 
 REGRAS:
 - Responda somente com base no CONTEXTO.
-- Se a informacao nao estiver explicitamente no CONTEXTO, responda:
+- Se a informação não estiver explicitamente no CONTEXTO, responda:
   "{out_of_context_answer}"
 - Nunca invente ou use conhecimento externo.
-- Nunca produza opinioes ou interpretacoes alem do que esta escrito.
+- Nunca produza opiniões ou interpretações além do que está escrito.
 
 EXEMPLOS DE PERGUNTAS FORA DO CONTEXTO:
-Pergunta: "Qual e a capital da Franca?"
+Pergunta: "Qual é a capital da França?"
 Resposta: "{out_of_context_answer}"
 
 Pergunta: "Quantos clientes temos em 2024?"
 Resposta: "{out_of_context_answer}"
 
-Pergunta: "Voce acha isso bom ou ruim?"
+Pergunta: "Você acha isso bom ou ruim?"
 Resposta: "{out_of_context_answer}"
 
-PERGUNTA DO USUARIO:
+PERGUNTA DO USUÁRIO:
 {pergunta}
 
-RESPONDA A "PERGUNTA DO USUARIO"
+RESPONDA A "PERGUNTA DO USUÁRIO"
 """
 
 
@@ -44,7 +42,7 @@ def search_context(
     *,
     settings: Settings | None = None,
     return_scores: bool = False,
-) -> tuple[str, list[tuple[object, float]]]:
+) -> tuple[str, list[tuple[Document, float]]]:
     """Retrieve context for a question from the vector store."""
 
     if not question or not question.strip():
